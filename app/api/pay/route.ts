@@ -12,6 +12,7 @@ export async function POST(req: Request) {
       formattedPhone = formattedPhone.slice(1);
     }
 
+    // MarzPay requires Basic Auth with API Key and API Secret
     const authString = Buffer.from(
       `${process.env.MARZPAY_API_KEY}:${process.env.MARZPAY_API_SECRET}`
     ).toString("base64");
