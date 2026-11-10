@@ -4,12 +4,18 @@ export async function POST(req: Request) {
   try {
     const { phone, amount, description } = await req.json();
 
-    // MarzPay requires Basic Auth directly on the request
+    // Format phone for MarzPay: 0707042220 -> 256707042220
+    let formattedPhone = phone.trim().replace(/\s+/g, "");
+    if (formattedPhone.startsWith("0")) {
+      formattedPhone = "256" + formattedPhone.slice(1);
+    } else if (formattedPhone.startsWith("+")) {
+      formattedPhone = formattedPhone.slice(1);
+    }
+
     const authString = Buffer.from(
       `${process.env.MARZPAY_API_KEY}:${process.env.MARZPAY_API_SECRET}`
     ).toString("base64");
 
-    // Correct MarzPay Endpoint for Collections
     const collectRes = await fetch("https://wallet.wearemarz.com/api/v1/collect-money", {
       method: "POST",
       headers: {
@@ -18,7 +24,7 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         amount: amount,
-        phone_number: phone,
+        phone_number: formattedPhone,
         description: description,
         country: "UG",
       }),
