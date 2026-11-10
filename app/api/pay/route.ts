@@ -1,23 +1,49 @@
 import { NextResponse } from "next/server";
-import MarzPay from "marzpay-js";
-
-const marzpay = new MarzPay({
-  apiKey: process.env.MARZPAY_API_KEY!,
-  apiSecret: process.env.MARZPAY_API_SECRET!,
-});
 
 export async function POST(req: Request) {
   try {
     const { phone, amount, description } = await req.json();
 
-    const collection = await marzpay.collections.collectMoney({
-      amount: amount,
-      phoneNumber: phone,
-      description: description,
+    // 1. Get Access Token from MarzPay
+    const authString = Buffer.from(
+      `${process.env.MARZPAY_API_KEY}:${process.env.MARZPAY_API_SECRET}`
+    ).toString("base64");
+
+    const tokenRes = await fetch("https://api.marzpay.com/v1/auth/token", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${authString}`,
+        "Content-Type": "application/json",
+      },
     });
 
-    return NextResponse.json({ success: true, reference: collection.data.reference });
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) {
+      return NextResponse.json({ success: false, error: "Auth failed" }, { status: 400 });
+    }
+
+    // 2. Request Collection (Sends PIN Prompt)
+    const collectRes = await fetch("https://api.marzpay.com/v1/collections/collect-money", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: amount,
+        phone_number: phone,
+        description: description,
+      }),
+    });
+
+    const collectData = await collectRes.json();
+
+    if (collectRes.ok) {
+      return NextResponse.json({ success: true, data: collectData });
+    } else {
+      return NextResponse.json({ success: false, error: collectData.message || "Payment failed" }, { status: 400 });
+    }
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
   }
 }
