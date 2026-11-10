@@ -1,0 +1,34 @@
+import Link from "next/link";
+import Logo from "./Logo";
+
+export default function Navbar() {
+  return (
+    <header className="sticky top-0 z-40 border-b border-white/5 bg-airtel-charcoal/80 backdrop-blur-md">
+      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3">
+          <Logo size={34} />
+          <span className="font-display font-semibold text-sm sm:text-base tracking-wide">
+            A.A.M <span className="text-airtel-gold">CASH KING1</span>
+          </span>
+        </Link>
+        <nav className="flex items-center gap-3 sm:gap-4 text-sm">
+          <Link href="/about" className="text-white/70 hover:text-white hidden sm:inline">
+            About
+          </Link>
+          <Link href="/policy" className="text-white/70 hover:text-white hidden sm:inline">
+            Policy
+          </Link>
+          <Link href="/login" className="text-white/70 hover:text-white">
+            Login
+          </Link>
+          <Link
+            href="/register"
+            className="btn-airtel rounded-md px-3 sm:px-4 py-2 text-xs sm:text-sm"
+          >
+            Get Started
+          </Link>
+        </nav>
+      </div>
+    </header>
+  );
+}
