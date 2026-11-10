@@ -18,8 +18,10 @@ export async function POST(req: Request) {
     });
 
     const tokenData = await tokenRes.json();
-    if (!tokenData.access_token) {
-      return NextResponse.json({ success: false, error: "Auth failed" }, { status: 400 });
+    
+    if (!tokenRes.ok) {
+      // Return the exact error from MarzPay
+      return NextResponse.json({ success: false, error: `Auth Error: ${tokenData.message || tokenRes.statusText}` }, { status: 400 });
     }
 
     // 2. Request Collection (Sends PIN Prompt)
@@ -41,9 +43,10 @@ export async function POST(req: Request) {
     if (collectRes.ok) {
       return NextResponse.json({ success: true, data: collectData });
     } else {
-      return NextResponse.json({ success: false, error: collectData.message || "Payment failed" }, { status: 400 });
+      // Return the exact error from MarzPay
+      return NextResponse.json({ success: false, error: `Collect Error: ${collectData.message || collectRes.statusText}` }, { status: 400 });
     }
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ success: false, error: `Server: ${error.message}` }, { status: 500 });
   }
 }
