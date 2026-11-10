@@ -30,19 +30,21 @@ export default function Navbar() {
           </span>
         </Link>
         
-        <nav className="flex items-center gap-3 sm:gap-4 text-sm">
+        <nav className="flex items-center gap-2 sm:gap-4 text-sm">
           <Link href="/about" className="text-white/70 hover:text-white hidden sm:inline">About</Link>
           <Link href="/policy" className="text-white/70 hover:text-white hidden sm:inline">Policy</Link>
           
           {user ? (
             <>
               <Link href="/dashboard" className="text-white/70 hover:text-white">Dashboard</Link>
-              <button onClick={handleLogout} className="text-white/60 hover:text-white border border-white/20 px-3 py-1.5 rounded text-xs">Logout</button>
+              <Link href="/profile" className="text-white/70 hover:text-white hidden sm:inline">Profile</Link>
+              <Link href="/activation" className="text-white/70 hover:text-white hidden sm:inline">Activation</Link>
+              <button onClick={handleLogout} className="text-white/60 hover:text-white border border-white/20 px-2 sm:px-3 py-1.5 rounded text-xs">Logout</button>
             </>
           ) : (
             <>
               <Link href="/login" className="text-white/70 hover:text-white">Login</Link>
-              <Link href="/register" className="btn-airtel rounded-md px-3 sm:px-4 py-2 text-xs sm:text-sm">Get Started</Link>
+              <Link href="/register" className="btn-airtel rounded-md px-2 sm:px-4 py-2 text-xs sm:text-sm">Get Started</Link>
             </>
           )}
         </nav>
