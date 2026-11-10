@@ -12,7 +12,9 @@ export async function POST(req: Request) {
       formattedPhone = formattedPhone.slice(1);
     }
 
-    // MarzPay requires Basic Auth with API Key and API Secret
+    // MarzPay requires a unique reference for every transaction
+    const reference = `MZ-${Date.now()}`;
+
     const authString = Buffer.from(
       `${process.env.MARZPAY_API_KEY}:${process.env.MARZPAY_API_SECRET}`
     ).toString("base64");
@@ -28,6 +30,7 @@ export async function POST(req: Request) {
         phone_number: formattedPhone,
         description: description,
         country: "UG",
+        reference: reference,
       }),
     });
 
