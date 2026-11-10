@@ -4,36 +4,23 @@ export async function POST(req: Request) {
   try {
     const { phone, amount, description } = await req.json();
 
-    // 1. Get Access Token from MarzPay (Correct URL)
+    // MarzPay requires Basic Auth directly on the request
     const authString = Buffer.from(
       `${process.env.MARZPAY_API_KEY}:${process.env.MARZPAY_API_SECRET}`
     ).toString("base64");
 
-    const tokenRes = await fetch("https://wallet.wearemarz.com/api/v1/auth/token", {
+    // Correct MarzPay Endpoint for Collections
+    const collectRes = await fetch("https://wallet.wearemarz.com/api/v1/collect-money", {
       method: "POST",
       headers: {
         Authorization: `Basic ${authString}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    const tokenData = await tokenRes.json();
-    
-    if (!tokenRes.ok) {
-      return NextResponse.json({ success: false, error: `Auth Error: ${tokenData.message || tokenRes.statusText}` }, { status: 400 });
-    }
-
-    // 2. Request Collection (Correct URL)
-    const collectRes = await fetch("https://wallet.wearemarz.com/api/v1/collections/collect-money", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${tokenData.access_token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         amount: amount,
         phone_number: phone,
         description: description,
+        country: "UG",
       }),
     });
 
@@ -42,9 +29,9 @@ export async function POST(req: Request) {
     if (collectRes.ok) {
       return NextResponse.json({ success: true, data: collectData });
     } else {
-      return NextResponse.json({ success: false, error: `Collect Error: ${collectData.message || collectRes.statusText}` }, { status: 400 });
+      return NextResponse.json({ success: false, error: `MarzPay Error: ${collectData.message || collectRes.statusText}` }, { status: 400 });
     }
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: `Server: ${error.message}` }, { status: 500 });
+    return NextResponse.json({ success: false, error: `Server Error: ${error.message}` }, { status: 500 });
   }
 }
