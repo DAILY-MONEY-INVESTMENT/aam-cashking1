@@ -4,23 +4,23 @@ export async function POST(req: Request) {
   try {
     const { phone, amount, description } = await req.json();
 
-    // 1. Format phone to international format (+256...)
+    // 1. Force the format to +256XXXXXXXXX (the format MarzPay SDKs expect)
     let formattedPhone = phone.trim().replace(/\s+/g, "");
     if (formattedPhone.startsWith("0")) {
       formattedPhone = "+256" + formattedPhone.slice(1);
+    } else if (formattedPhone.startsWith("256")) {
+      formattedPhone = "+" + formattedPhone;
     } else if (!formattedPhone.startsWith("+")) {
       formattedPhone = "+" + formattedPhone;
     }
 
-    // 2. Generate unique reference (REQUIRED)
+    // 2. Generate a unique reference (some MarzPay endpoints require this)
     const reference = `MZ-${Date.now()}`;
 
-    // 3. Basic Auth
     const authString = Buffer.from(
       `${process.env.MARZPAY_API_KEY}:${process.env.MARZPAY_API_SECRET}`
     ).toString("base64");
 
-    // 4. Make the request with ALL required fields
     const collectRes = await fetch("https://wallet.wearemarz.com/api/v1/collect-money", {
       method: "POST",
       headers: {
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     if (collectRes.ok) {
       return NextResponse.json({ success: true, data: collectData });
     } else {
-      // This will show us exactly what MarzPay is complaining about
+      // Return the exact error text so we can see what MarzPay says
       return NextResponse.json({ success: false, error: `MarzPay: ${collectData.message || JSON.stringify(collectData)}` }, { status: 400 });
     }
   } catch (error: any) {
